@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "node-id3": "^0.2.6"
+    "node-id3": "^0.2.6",
+    "utimes": "^5.2.0"
   },
   "devDependencies": {
     "@types/prompts": "^2.4.4",

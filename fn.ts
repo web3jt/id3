@@ -3,6 +3,19 @@ import path from 'path';
 import prompts from 'prompts';
 import NodeID3 from 'node-id3';
 
+
+export type Mp3File = {
+  file: string;
+  title: string;
+  artist: string;
+}
+
+export type Mp4File = {
+  file: string;
+  ctimeMs: number;
+  mtimeMs: number;
+}
+
 export const askForString = async function (hint: string = "Input a string"): Promise<string> {
   while (true) {
     const response = await prompts({
@@ -33,20 +46,75 @@ export const askForPath = async function (hint: string = "Input a path"): Promis
   }
 }
 
-export const getMp3Files = async function (dir: string = ''): Promise<string[]> {
+
+export const askForFile = async function (hint: string = "Path to file"): Promise<string> {
+  while (true) {
+    const response = await prompts({
+      type: 'text',
+      name: 'value',
+      message: hint,
+      validate: (value) => {
+        if (!fs.existsSync(value)) return `File ${value} does not exist`;
+        if (!fs.lstatSync(value).isFile()) return `${value} is not a file`;
+
+        return true;
+      },
+    });
+
+    if (response.value) return response.value;
+  }
+}
+
+export const getMp3Files = async function (dir: string = ''): Promise<Mp3File[]> {
   if (!dir) dir = await askForPath('MP3 dir');
 
-  const files: string[] = [];
+  const files: Mp3File[] = [];
   const _files = fs.readdirSync(dir);
+
   _files.forEach((file, i) => {
     const p2f = path.join(dir, file);
     if (fs.lstatSync(p2f).isDirectory()) return;
     if (file.startsWith('_') || file.startsWith('.')) return;
     if (path.extname(p2f) !== '.mp3') return;
-    files.push(p2f);
+
+    const tags = readTags(p2f);
+
+    files.push({
+      file: file,
+      title: tags.title || '',
+      artist: tags.artist || '',
+    });
   });
 
   console.log(`\nFound ${files.length} MP3 files...\n`);
+  return files;
+}
+
+
+
+
+
+export const getMp4Files = async function (dir: string = ''): Promise<Mp4File[]> {
+  if (!dir) dir = await askForPath('MP4 dir');
+
+  const files: Mp4File[] = [];
+  const _files = fs.readdirSync(dir);
+  _files.forEach((file, i) => {
+    const p2f = path.join(dir, file);
+    if (fs.lstatSync(p2f).isDirectory()) return;
+    if (file.startsWith('_') || file.startsWith('.')) return;
+    if (path.extname(p2f) !== '.mp4') return;
+
+    const stat = fs.statSync(p2f);
+
+    files.push({
+      file: file,
+      ctimeMs: stat.ctimeMs,
+      mtimeMs: stat.mtimeMs,
+    });
+  });
+
+  console.log(`\nFound ${files.length} MP4 files...\n`);
   return files;
 }
 
