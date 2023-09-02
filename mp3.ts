@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { askForString, getMp3Files, askForPath, readTags } from './fn';
+import { askForString, getMp3Files, askForPath } from './libs/fn';
 
 const keepChars = function (str: string = ''): string {
   return str.replace(`'s`, 's').replace(/[^\w\d\u4e00-\u9fa5]/g, ' ').trim().replace(/\s+/g, '_');

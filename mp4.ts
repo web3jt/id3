@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Mp4File, getMp4Files, askForPath } from './fn';
+import { Mp4File, getMp4Files, askForPath } from './libs/fn';
 
 const main = async function () {
   const dir = await askForPath('MP4 dir');

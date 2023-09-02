@@ -1,7 +1,7 @@
 import fs from 'fs';
 
 import { utimes } from 'utimes';
-import { askForFile } from './fn';
+import { askForFile } from './libs/fn';
 
 const main = async function () {
   const srcFile = await askForFile('Src file');
