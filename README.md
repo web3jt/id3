@@ -7,6 +7,7 @@
 - Read mp3 `id3` tags from a directory
 - Give them a random order
 - Rename them with the random order number prefix, then the title
+- Create a `.m3u` playlist file, if `../playlists` directory exists
 
 ## mp4.ts
 
