@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import prompts from 'prompts';
 import NodeID3 from 'node-id3';
+import cliProgress from 'cli-progress';
 
 
 export type Mp3File = {
@@ -71,7 +72,14 @@ export const getMp3Files = async function (dir: string = ''): Promise<Mp3File[]>
   const files: Mp3File[] = [];
   const _files = fs.readdirSync(dir);
 
+  const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+  console.log('\nDiscovering in directory...');
+  bar.start(_files.length, 0);
+
+
   _files.forEach((file, i) => {
+    const n = i + 1;
+
     const p2f = path.join(dir, file);
     if (fs.lstatSync(p2f).isDirectory()) return;
     if (file.startsWith('_') || file.startsWith('.')) return;
@@ -84,7 +92,11 @@ export const getMp3Files = async function (dir: string = ''): Promise<Mp3File[]>
       title: tags.title || '',
       artist: tags.artist || '',
     });
+
+    bar.update(n);
   });
+
+  bar.stop();
 
   console.log(`\nFound ${files.length} MP3 files...\n`);
   return files;
@@ -99,7 +111,15 @@ export const getMp4Files = async function (dir: string = ''): Promise<Mp4File[]>
 
   const files: Mp4File[] = [];
   const _files = fs.readdirSync(dir);
+
+  const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+
+  console.log('\nDiscovering in directory...');
+  bar.start(_files.length, 0);
+
   _files.forEach((file, i) => {
+    const n = i + 1;
+
     const p2f = path.join(dir, file);
     if (fs.lstatSync(p2f).isDirectory()) return;
     if (file.startsWith('_') || file.startsWith('.')) return;
@@ -112,7 +132,11 @@ export const getMp4Files = async function (dir: string = ''): Promise<Mp4File[]>
       ctimeMs: stat.ctimeMs,
       mtimeMs: stat.mtimeMs,
     });
+
+    bar.update(n);
   });
+
+  bar.stop();
 
   console.log(`\nFound ${files.length} MP4 files...\n`);
   return files;
