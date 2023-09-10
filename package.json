@@ -3,6 +3,7 @@
     "cli-progress": "^3.12.0",
     "node-id3": "^0.2.6",
     "utimes": "^5.2.0",
+    "yaml": "^2.3.2",
     "zhconvertor": "^2.2.4"
   },
   "devDependencies": {

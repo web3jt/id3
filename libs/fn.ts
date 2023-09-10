@@ -3,6 +3,31 @@ import path from 'path';
 import prompts from 'prompts';
 import NodeID3 from 'node-id3';
 import cliProgress from 'cli-progress';
+import zhConvertor from 'zhconvertor';
+import CONFIG from './config';
+
+
+const joinSuffixes = (): string[] => {
+  const suffixes: string[] = [];
+  const configSuffixes: string[] = CONFIG.YOUTUBE_CHANNEL_SUFFIXES;
+
+  configSuffixes.forEach((suffix) => {
+    suffixes.push(`「${suffix}」`);
+    suffixes.push(`|${suffix}`);
+    suffixes.push(`| ${suffix}`);
+    suffixes.push(`｜${suffix}`);
+    suffixes.push(`｜ ${suffix}`);
+    suffixes.push(`l${suffix}`);
+    suffixes.push(`l ${suffix}`);
+    suffixes.push(`I${suffix}`);
+    suffixes.push(`I ${suffix}`);
+    suffixes.push(suffix);
+  });
+
+  return suffixes;
+}
+
+const ALL_SUFFIXES: string[] = joinSuffixes();
 
 
 export type Mp3File = {
@@ -66,6 +91,23 @@ export const askForFile = async function (hint: string = "Path to file"): Promis
   }
 }
 
+export const getSubDirs = async function (dir: string = ''): Promise<string[]> {
+  const dirs: string[] = [];
+  const _dirs = fs.readdirSync(dir);
+
+  _dirs.forEach((_dir, i) => {
+    const p2f = path.join(dir, _dir);
+    if (!fs.lstatSync(p2f).isDirectory()) return;
+    if (_dir.startsWith('_') || _dir.startsWith('.')) return;
+
+    dirs.push(_dir);
+  });
+
+  console.log(`\nFound ${dirs.length} directories...\n`);
+  return dirs;
+}
+
+
 export const getMp3Files = async function (dir: string = ''): Promise<Mp3File[]> {
   if (!dir) dir = await askForPath('MP3 dir');
 
@@ -114,7 +156,7 @@ export const getMp4Files = async function (dir: string = ''): Promise<Mp4File[]>
 
   const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
-  console.log('\nDiscovering in directory...');
+  console.log(`\nDiscovering in 「${dir}」...`);
   bar.start(_files.length, 0);
 
   _files.forEach((file, i) => {
@@ -138,9 +180,47 @@ export const getMp4Files = async function (dir: string = ''): Promise<Mp4File[]>
 
   bar.stop();
 
-  console.log(`\nFound ${files.length} MP4 files...\n`);
+  console.log(`Found ${files.length} MP4 files...\n`);
   return files;
 }
+
+export const renameMp4FilesInDir = async function (dir: string = '') {
+  // const dir = await askForPath('MP4 dir');
+  const mp4Files: Mp4File[] = await getMp4Files(dir);
+  const ordFiles = mp4Files.sort((a, b) => a.ctimeMs - b.ctimeMs);
+  const padLength = mp4Files.length.toString().length + 1;
+
+  ordFiles.forEach((mp4File, i) => {
+    const n = i + 1;
+    const pOld = path.join(dir, mp4File.file);
+
+    let basename = zhConvertor.t2s(path.basename(mp4File.file, '.mp4'))
+      .trim()
+      .replace(/^\d+\s-\s/, '');
+
+    ALL_SUFFIXES.forEach((suffix) => {
+      basename = basename.replace(new RegExp(`${suffix}$`, "gi"), '');
+    });
+
+    basename = basename
+      .replace(/[…]+$/, '')
+      .trim();
+
+    const pNew = path.join(dir, `${String(n).padStart(padLength, '0')} - ${basename}.mp4`);
+
+    if (pOld !== pNew) {
+      console.log(pNew);
+      fs.renameSync(pOld, pNew);
+    }
+  });
+
+  return;
+}
+
+
+
+
+
 
 const options = {
   // only read the specified tags (default: all)
