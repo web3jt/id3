@@ -13,6 +13,7 @@ const joinSuffixes = (): string[] => {
 
   configSuffixes.forEach((suffix) => {
     suffixes.push(`「${suffix}」`);
+    suffixes.push(`【${suffix}】`);
     suffixes.push(`|${suffix}`);
     suffixes.push(`| ${suffix}`);
     suffixes.push(`｜${suffix}`);
@@ -216,11 +217,6 @@ export const renameMp4FilesInDir = async function (dir: string = '') {
 
   return;
 }
-
-
-
-
-
 
 const options = {
   // only read the specified tags (default: all)
