@@ -14,14 +14,14 @@ const joinSuffixes = (): string[] => {
   configSuffixes.forEach((suffix) => {
     suffixes.push(`「${suffix}」`);
     suffixes.push(`【${suffix}】`);
-    suffixes.push(`|${suffix}`);
-    suffixes.push(`| ${suffix}`);
-    suffixes.push(`｜${suffix}`);
-    suffixes.push(`｜ ${suffix}`);
-    suffixes.push(`l${suffix}`);
-    suffixes.push(`l ${suffix}`);
-    suffixes.push(`I${suffix}`);
-    suffixes.push(`I ${suffix}`);
+    // suffixes.push(`|${suffix}`);
+    // suffixes.push(`| ${suffix}`);
+    // suffixes.push(`｜${suffix}`);
+    // suffixes.push(`｜ ${suffix}`);
+    // suffixes.push(`l${suffix}`);
+    // suffixes.push(`l ${suffix}`);
+    // suffixes.push(`I${suffix}`);
+    // suffixes.push(`I ${suffix}`);
     suffixes.push(suffix);
   });
 
@@ -197,17 +197,23 @@ export const renameMp4FilesInDir = async function (dir: string = '') {
 
     let basename = zhConvertor.t2s(path.basename(mp4File.file, '.mp4'))
       .trim()
-      .replace(/^\d+\s-\s/, '');
+      .replace(/^\d+\s-\s/, '')
+      .trim();
 
-    ALL_SUFFIXES.forEach((suffix) => {
-      basename = basename.replace(new RegExp(`${suffix}$`, "gi"), '');
-    });
+    ALL_SUFFIXES.forEach((suffix) => basename = basename.replace(new RegExp(`${suffix}$`, "gi"), '').trim());
 
     basename = basename
+      .replace(/\|$/gi, '')
+      .replace(/｜$/gi, '')
+      .replace(/l$/gi, '')
+      .replace(/I$/gi, '')
+      .trim()
       .replace(/[…]+$/, '')
       .trim();
 
     const pNew = path.join(dir, `${String(n).padStart(padLength, '0')} - ${basename}.mp4`);
+    // console.log(pOld);
+    // console.log(pNew);
 
     if (pOld !== pNew) {
       console.log(pNew);
