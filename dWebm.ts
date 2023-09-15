@@ -16,8 +16,8 @@ const main = async function () {
     const files = await getWebmFiles(_p2d);
 
     files.forEach(async (webmFile) => {
-      const p2webm = path.join(_p2d, webmFile.file);
-      const p2mp4 = path.join(_p2d, `${path.basename(webmFile.file, '.webm')}.mp4`);
+      const p2webm = path.join(_p2d, webmFile);
+      const p2mp4 = path.join(_p2d, `${path.basename(webmFile, '.webm')}.mp4`);
 
       if (fs.existsSync(p2mp4)) {
         console.log(`Found .webm => .mp4 file: ${p2mp4}`);

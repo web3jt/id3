@@ -186,10 +186,10 @@ export const getMp4Files = async function (dir: string = ''): Promise<Mp4File[]>
   return files;
 }
 
-export const getWebmFiles = async function (dir: string = ''): Promise<Mp4File[]> {
+export const getWebmFiles = async function (dir: string = ''): Promise<string[]> {
   if (!dir) dir = await askForPath('.webm dir');
 
-  const files: Mp4File[] = [];
+  const files: string[] = [];
   const _files = fs.readdirSync(dir);
 
   const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
@@ -207,11 +207,7 @@ export const getWebmFiles = async function (dir: string = ''): Promise<Mp4File[]
 
     const stat = fs.statSync(p2f);
 
-    files.push({
-      file: file,
-      ctimeMs: stat.ctimeMs,
-      mtimeMs: stat.mtimeMs,
-    });
+    files.push(file);
 
     bar.update(n);
   });
