@@ -4,6 +4,7 @@ import prompts from 'prompts';
 import NodeID3 from 'node-id3';
 import cliProgress from 'cli-progress';
 import zhConvertor from 'zhconvertor';
+import { utimes } from 'utimes';
 import CONFIG from './config';
 
 
@@ -160,7 +161,7 @@ export const getMp4Files = async function (dir: string = ''): Promise<Mp4File[]>
   console.log(`\nDiscovering in 「${dir}」...`);
   bar.start(_files.length, 0);
 
-  _files.forEach((file, i) => {
+  _files.forEach(async (file, i) => {
     const n = i + 1;
 
     const p2f = path.join(dir, file);
@@ -181,9 +182,46 @@ export const getMp4Files = async function (dir: string = ''): Promise<Mp4File[]>
 
   bar.stop();
 
-  console.log(`Found ${files.length} MP4 files...\n`);
+  console.log(`Found ${files.length} .mp4 files...\n`);
   return files;
 }
+
+export const getWebmFiles = async function (dir: string = ''): Promise<Mp4File[]> {
+  if (!dir) dir = await askForPath('.webm dir');
+
+  const files: Mp4File[] = [];
+  const _files = fs.readdirSync(dir);
+
+  const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+
+  console.log(`\nDiscovering in 「${dir}」...`);
+  bar.start(_files.length, 0);
+
+  _files.forEach(async (file, i) => {
+    const n = i + 1;
+
+    const p2f = path.join(dir, file);
+    if (fs.lstatSync(p2f).isDirectory()) return;
+    if (file.startsWith('_') || file.startsWith('.')) return;
+    if (path.extname(p2f) !== '.webm') return;
+
+    const stat = fs.statSync(p2f);
+
+    files.push({
+      file: file,
+      ctimeMs: stat.ctimeMs,
+      mtimeMs: stat.mtimeMs,
+    });
+
+    bar.update(n);
+  });
+
+  bar.stop();
+
+  console.log(`Found ${files.length} .webm files...\n`);
+  return files;
+}
+
 
 export const renameMp4FilesInDir = async function (dir: string = '') {
   // const dir = await askForPath('MP4 dir');
