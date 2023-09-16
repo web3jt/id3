@@ -4,7 +4,7 @@ import prompts from 'prompts';
 import NodeID3 from 'node-id3';
 import cliProgress from 'cli-progress';
 import zhConvertor from 'zhconvertor';
-import { utimes } from 'utimes';
+import pangu from 'pangu';
 import CONFIG from './config';
 
 
@@ -15,6 +15,8 @@ const joinSuffixes = (): string[] => {
   configSuffixes.forEach((suffix) => {
     suffixes.push(`「${suffix}」`);
     suffixes.push(`【${suffix}】`);
+    suffixes.push(`（${suffix}）`);
+    suffixes.push(`(${suffix})`);
     // suffixes.push(`|${suffix}`);
     // suffixes.push(`| ${suffix}`);
     // suffixes.push(`｜${suffix}`);
@@ -229,28 +231,36 @@ export const renameMp4FilesInDir = async function (dir: string = '') {
     const n = i + 1;
     const pOld = path.join(dir, mp4File.file);
 
-    let basename = zhConvertor.t2s(path.basename(mp4File.file, '.mp4'))
-      .trim()
-      .replace(/^\d+\s-\s/, '')
-      .trim();
+    let basename =
+      pangu.spacing(
+        zhConvertor.t2s(
+          path.basename(mp4File.file, '.mp4')
+        )
+      )
+        .trim()
+        .replace(/^\d+\s-\s/, '')
+        .trim();
 
     ALL_SUFFIXES.forEach((suffix) => basename = basename.replace(new RegExp(`${suffix}$`, "gi"), '').trim());
 
-    basename = basename
-      .replace(/\|$/gi, '')
-      .replace(/｜$/gi, '')
-      .replace(/l$/gi, '')
-      .replace(/I$/gi, '')
-      .trim()
-      .replace(/[…]+$/, '')
-      .trim();
+    basename =
+      basename
+        .replace(/\|$/gi, '')
+        .replace(/｜$/gi, '')
+        .replace(/l$/gi, '')
+        .replace(/I$/gi, '')
+        .trim()
+        .replace(/[…]+$/, '')
+        .replace(/[\.]+$/, '')
+        .replace(/[。]+$/, '')
+        .replace(/[！]+$/, '')
+        .replace(/[？]+$/, '')
+        .trim();
 
     const pNew = path.join(dir, `${String(n).padStart(padLength, '0')} - ${basename}.mp4`);
-    // console.log(pOld);
-    // console.log(pNew);
 
     if (pOld !== pNew) {
-      console.log(pNew);
+      console.log(`\n${pOld}\n${pNew}`);
       fs.renameSync(pOld, pNew);
     }
   });
