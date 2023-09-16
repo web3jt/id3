@@ -8,6 +8,18 @@ import pangu from 'pangu';
 import CONFIG from './config';
 
 
+const joinPrefixes = (): string[] => {
+  const prefixes: string[] = [];
+  const configPrefixes: string[] = CONFIG.YOUTUBE_CHANNEL_PREFIXES;
+
+  configPrefixes.forEach((prefix) => {
+    prefixes.push(`「${prefix}」`);
+    prefixes.push(`【${prefix}】`);
+  });
+
+  return prefixes;
+}
+
 const joinSuffixes = (): string[] => {
   const suffixes: string[] = [];
   const configSuffixes: string[] = CONFIG.YOUTUBE_CHANNEL_SUFFIXES;
@@ -31,8 +43,23 @@ const joinSuffixes = (): string[] => {
   return suffixes;
 }
 
-const ALL_SUFFIXES: string[] = joinSuffixes();
+const joinTopics = (): RegExp[] => {
+  const _rlt: RegExp[] = [];
 
+  const configTopics: string[] = CONFIG.YOUTUBE_CHANNEL_TOPICS;
+  configTopics.forEach((topic) => {
+    _rlt.push(new RegExp(`^(${topic})\\s?(\\d\+)\\s?：\\s?(\.\+)$`));
+    _rlt.push(new RegExp(`^(${topic})\\s?(\\d\+)\\s?-\\s?(\.\+)$`));
+    _rlt.push(new RegExp(`^【(${topic})\\s?(\\d\+)\\s?】\\s?(\.\+)$`));
+    _rlt.push(new RegExp(`^「(${topic})\\s?(\\d\+)\\s?」\\s?(\.\+)$`));
+  });
+
+  return _rlt;
+}
+
+const ALL_SUFFIXES: string[] = joinSuffixes();
+const ALL_PREFIXES: string[] = joinPrefixes();
+const ALL_TOPICS: RegExp[] = joinTopics();
 
 export type Mp3File = {
   file: string;
@@ -225,7 +252,8 @@ export const renameMp4FilesInDir = async function (dir: string = '') {
   // const dir = await askForPath('MP4 dir');
   const mp4Files: Mp4File[] = await getMp4Files(dir);
   const ordFiles = mp4Files.sort((a, b) => a.ctimeMs - b.ctimeMs);
-  const padLength = mp4Files.length.toString().length + 1;
+  const tpcLength = mp4Files.length.toString().length;
+  const padLength = tpcLength + 1;
 
   ordFiles.forEach((mp4File, i) => {
     const n = i + 1;
@@ -241,6 +269,7 @@ export const renameMp4FilesInDir = async function (dir: string = '') {
         .replace(/^\d+\s-\s/, '')
         .trim();
 
+    ALL_PREFIXES.forEach((prefix) => basename = basename.replace(new RegExp(`^${prefix}`, "gi"), '').trim());
     ALL_SUFFIXES.forEach((suffix) => basename = basename.replace(new RegExp(`${suffix}$`, "gi"), '').trim());
 
     basename =
@@ -257,7 +286,16 @@ export const renameMp4FilesInDir = async function (dir: string = '') {
         .replace(/[？]+$/, '')
         .trim();
 
-    const pNew = path.join(dir, `${String(n).padStart(padLength, '0')} - ${basename}.mp4`);
+    let newBasename = `${String(n).padStart(padLength, '0')} - ${basename}`;
+
+    ALL_TOPICS.forEach((regex) => {
+      const matches = basename.match(regex);
+      if (matches) {
+        newBasename = `「${matches[1]} ${String(matches[2]).padStart(tpcLength, '0')}」${matches[3]}`;
+      }
+    });
+
+    let pNew = path.join(dir, `${newBasename}.mp4`);
 
     if (pOld !== pNew) {
       console.log(`\n${pOld}\n${pNew}`);
