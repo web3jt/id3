@@ -43,7 +43,7 @@ const joinSuffixes = (): string[] => {
   return suffixes;
 }
 
-const joinTopics = (): RegExp[] => {
+const joinTopicsA = (): RegExp[] => {
   const _rlt: RegExp[] = [];
 
   const configTopics: string[] = CONFIG.YOUTUBE_CHANNEL_TOPICS;
@@ -57,9 +57,24 @@ const joinTopics = (): RegExp[] => {
   return _rlt;
 }
 
+const joinTopicsB = (): RegExp[] => {
+  const _rlt: RegExp[] = [];
+
+  const configTopics: string[] = CONFIG.YOUTUBE_CHANNEL_TOPICS;
+  configTopics.forEach((topic) => {
+    // _rlt.push(new RegExp(`^(\.\+)\\s?|\\s?(${topic})\\s?(\\d\+)$`));
+    // _rlt.push(new RegExp(`^(\.\+)\\s?-\\s?(${topic})\\s?(\\d\+)$`));
+    _rlt.push(new RegExp(`^(\.\+)\\s?【\\s?(${topic})\\s?(\\d\+)】$`));
+    _rlt.push(new RegExp(`^(\.\+)\\s?「\\s?(${topic})\\s?(\\d\+)」$`));
+  });
+
+  return _rlt;
+}
+
 const ALL_SUFFIXES: string[] = joinSuffixes();
 const ALL_PREFIXES: string[] = joinPrefixes();
-const ALL_TOPICS: RegExp[] = joinTopics();
+const ALL_TOPICS_A: RegExp[] = joinTopicsA();
+const ALL_TOPICS_B: RegExp[] = joinTopicsB();
 
 export type Mp3File = {
   file: string;
@@ -288,12 +303,21 @@ export const renameMp4FilesInDir = async function (dir: string = '') {
 
     let newBasename = `${String(n).padStart(padLength, '0')} - ${basename}`;
 
-    ALL_TOPICS.forEach((regex) => {
+    ALL_TOPICS_A.forEach((regex) => {
       const matches = basename.match(regex);
       if (matches) {
         newBasename = `「${matches[1]} ${String(matches[2]).padStart(tpcLength, '0')}」${matches[3]}`;
       }
     });
+
+    ALL_TOPICS_B.forEach((regex) => {
+      const matches = basename.match(regex);
+      if (matches) {
+        newBasename = `「${matches[2]} ${String(matches[3]).padStart(tpcLength, '0')}」${matches[1]}`;
+      }
+    });
+
+    newBasename = newBasename.trim();
 
     let pNew = path.join(dir, `${newBasename}.mp4`);
 
