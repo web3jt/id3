@@ -29,6 +29,8 @@ const joinSuffixes = (): string[] => {
     suffixes.push(`【${suffix}】`);
     suffixes.push(`（${suffix}）`);
     suffixes.push(`(${suffix})`);
+    suffixes.push(`\\[${suffix}\\]`);
+    suffixes.push(`\\[${suffix}`);
     // suffixes.push(`|${suffix}`);
     // suffixes.push(`| ${suffix}`);
     // suffixes.push(`｜${suffix}`);
@@ -293,10 +295,13 @@ export const renameMp4FilesInDir = async function (dir: string = '') {
         .replace(/｜$/gi, '')
         .replace(/l$/gi, '')
         .replace(/I$/gi, '')
+        .replace(/\[$/gi, '')
         .trim()
-        .replace(/[…]+$/, '')
         .replace(/[\.]+$/, '')
+        .replace(/[\!]+$/, '')
+        .replace(/[\?]+$/, '')
         .replace(/[。]+$/, '')
+        .replace(/[…]+$/, '')
         .replace(/[！]+$/, '')
         .replace(/[？]+$/, '')
         .trim();
