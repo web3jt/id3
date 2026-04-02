@@ -2,7 +2,7 @@
   "dependencies": {
     "cli-progress": "^3.12.0",
     "node-id3": "^0.2.6",
-    "pangu": "^4.0.7",
+    "pangu": "^7.2.1",
     "utimes": "^5.2.0",
     "yaml": "^2.3.2",
     "zhconvertor": "^2.2.4"
